@@ -105,9 +105,10 @@ export const updateProjectSchema = z.object({
   description: z.string().optional(),
   project_type: z.enum(['personal', 'work']).optional(),
   status: z.enum(['planning', 'in_development', 'completed', 'on_hold']).optional(),
-  production_url: z.string().optional(),
-  repository_url: z.string().optional(),
+  production_url: z.string().optional().nullable(),
+  repository_url: z.string().optional().nullable(),
   tech_stack: z.array(z.string()).optional(),
+  user_id: z.string(),
 });
 
 export const updateProject = createServerFn({
@@ -116,6 +117,8 @@ export const updateProject = createServerFn({
   .inputValidator(updateProjectSchema)
   .handler(async ({data}): Promise<void> => {
     const supabase = getSupabaseServerClient();
+
+    console.log('Updating project payload:', data);
 
     const updateProjectQuery = await supabase.from('projects').update({
       name: data.name,

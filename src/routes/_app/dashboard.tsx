@@ -22,7 +22,7 @@ export const Route = createFileRoute('/_app/dashboard')({
 
 export function RouteComponent() {
   const { projectsData } = Route.useLoaderData()
-  
+
   const projects = projectsData.map(data => new Project({
     id: data.id,
     name: data.name,
@@ -42,7 +42,7 @@ export function RouteComponent() {
     day: "numeric",
   })
 
-  const activeProjects = projects.filter((p) => p.getStatus() === "in-development" || p.getStatus() === "planning")
+  const activeProjects = projects.filter((p) => p.getStatus() === "in_development" || p.getStatus() === "planning")
 
   return (
     <div className="space-y-8">

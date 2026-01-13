@@ -1,5 +1,5 @@
-export type ProjectStatus = "planning" | "in-development" | "completed" | "on-hold"
-export type ProjectType = "personal" | "client"
+export type ProjectStatus = "planning" | "in_development" | "completed" | "on_hold"
+export type ProjectType = "personal" | "work"
 
 export interface ProjectData {
     id: string
@@ -9,7 +9,7 @@ export interface ProjectData {
     project_type: ProjectType
     production_url?: string
     repository_url?: string
-    tech_stack: string[]
+    tech_stack?: string[]
     updated_at: string
 }
 

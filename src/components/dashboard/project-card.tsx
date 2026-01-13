@@ -11,14 +11,14 @@ import { Project, ProjectStatus, ProjectType } from "@/domain/Project"
 
 const statusConfig: Record<ProjectStatus, { label: string; className: string }> = {
   planning: { label: "Planning", className: "bg-blue-100 text-blue-700" },
-  "in-development": { label: "In Development", className: "bg-amber-100 text-amber-700" },
+  "in_development": { label: "In Development", className: "bg-amber-100 text-amber-700" },
   completed: { label: "Completed", className: "bg-emerald-100 text-emerald-700" },
-  "on-hold": { label: "On Hold", className: "bg-gray-100 text-gray-700" },
+  "on_hold": { label: "On Hold", className: "bg-gray-100 text-gray-700" },
 }
 
 const typeConfig: Record<ProjectType, { label: string; className: string }> = {
   personal: { label: "Personal", className: "bg-purple-100 text-purple-700" },
-  client: { label: "Client Work", className: "bg-orange-100 text-orange-700" },
+  work: { label: "Client Work", className: "bg-orange-100 text-orange-700" },
 }
 
 export function ProjectCard({ project }: { project: Project }) {
@@ -32,20 +32,20 @@ export function ProjectCard({ project }: { project: Project }) {
       <CardContent className="p-5">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
-            <Link to={'/projects/$projectId'} params={{projectId: project.getId()}} className="block">
+            <Link to={'/projects/$projectId'} params={{ projectId: project.getId() }} className="block">
               <h3 className="font-semibold truncate group-hover:text-primary transition-colors">{project.getName()}</h3>
             </Link>
             <p className="mt-1 text-sm text-muted-foreground line-clamp-2">{project.getDescription()}</p>
           </div>
           <div className="flex gap-1">
             <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
-              <Link to={'/projects/$projectId'} params={{projectId: project.getId()}}>
+              <Link to={'/projects/$projectId'} params={{ projectId: project.getId() }}>
                 <Eye className="h-4 w-4" />
                 <span className="sr-only">View project</span>
               </Link>
             </Button>
             <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
-              <Link to={'/projects/$projectId/edit'} params={{projectId: project.getId()}}>
+              <Link to={'/projects/$projectId/edit'} params={{ projectId: project.getId() }}>
                 <Pencil className="h-4 w-4" />
                 <span className="sr-only">Edit project</span>
               </Link>
