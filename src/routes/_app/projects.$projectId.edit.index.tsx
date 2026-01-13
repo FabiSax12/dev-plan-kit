@@ -67,7 +67,6 @@ function RouteComponent() {
       tech_stack: project.getTechStack(),
     },
     onSubmit: async ({ value }) => {
-      console.log('Form submitted with value:', value);
       await editProjectMutation.mutateAsync({ ...value, user_id: userId, id: projectId });
       router.navigate({ to: "/projects" })
     },

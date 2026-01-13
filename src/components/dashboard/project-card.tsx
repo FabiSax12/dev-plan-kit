@@ -22,8 +22,6 @@ const typeConfig: Record<ProjectType, { label: string; className: string }> = {
 }
 
 export function ProjectCard({ project }: { project: Project }) {
-  console.log(project)
-
   const status = statusConfig[project.getStatus()]
   const type = typeConfig[project.getProjectType()]
 

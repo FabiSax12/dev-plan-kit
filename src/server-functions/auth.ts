@@ -14,7 +14,6 @@ export const signUpWithEmailAndPassword = createServerFn({
   })
 ).handler(async ({ data }) => {
   const supabase = getSupabaseServerClient();
-  console.log('Signing up user with email:', data.email);
 
   const {data: signUpData, error} = await supabase.auth.signUp({
     email: data.email,
@@ -23,8 +22,6 @@ export const signUpWithEmailAndPassword = createServerFn({
       emailRedirectTo: data.callbackUrl,
     }
   });
-
-  console.log('Sign up response:', signUpData, error);
 
   if (error) {
     throw new Error(error.message)
@@ -118,8 +115,6 @@ export const resetPassword = createServerFn({ method: 'POST' })
   if (response.error) {
     throw new Error(response.error.message);
   }
-
-  console.log("Password reseted for email: ", data.email)
 })
 
 export const changePassword = createServerFn({ method: 'POST' })
@@ -137,8 +132,6 @@ export const changePassword = createServerFn({ method: 'POST' })
   if (response.error) {
     throw new Error(response.error.message);
   }
-
-  console.log("Password changed", response.data)
 
   return response.data;
 })

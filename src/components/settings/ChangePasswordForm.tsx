@@ -41,8 +41,6 @@ export const ChangePasswordForm = () => {
 
         if (response.error) {
             console.error('Error updating password:', response.error.message);
-        } else {
-            console.log('Password updated successfully');
         }
 
         await router.invalidate();

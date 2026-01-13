@@ -29,13 +29,10 @@ export const EditProfileInformationForm = () => {
             },
         }
 
-        console.log('Updating user with data:', updatedData);
         const response = await supabase.auth.updateUser(updatedData);
 
         if (response.error) {
             console.error('Error updating user:', response.error.message);
-        } else {
-            console.log('User updated successfully:', response.data);
         }
 
         router.invalidate();

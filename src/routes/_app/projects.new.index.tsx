@@ -40,7 +40,6 @@ function RouteComponent() {
       tech_stack: [] as string[],
     },
     onSubmit: async ({ value }) => {
-      console.log('Form submitted with value:', value);
       await createProjectMutation.mutateAsync({ ...value, user_id: userId });
       router.navigate({ to: "/projects" })
     },

@@ -10,16 +10,12 @@ export const getProjects = createServerFn({method: 'GET'})
 
   const user = await supabase.auth.getUser();
 
-  console.log('User fetch result:', user);
-
   if (user.error || !user.data.user) {
     console.error('Error fetching user:', user.error);
     return [];
   }
 
   const projectsQuery = await supabase.from('projects').select('*');
-
-  console.log('Projects query:', projectsQuery);
 
   if (projectsQuery.error) {
     console.error('Error fetching projects:', projectsQuery.error);
@@ -62,8 +58,6 @@ export const createProject = createServerFn({
 })
   .inputValidator(createProjectSchema)
   .handler(async ({data}): Promise<void> => {
-
-    console.log('Creating project payload:', data);
 
     const supabase = getSupabaseServerClient();
 
@@ -117,8 +111,6 @@ export const updateProject = createServerFn({
   .inputValidator(updateProjectSchema)
   .handler(async ({data}): Promise<void> => {
     const supabase = getSupabaseServerClient();
-
-    console.log('Updating project payload:', data);
 
     const updateProjectQuery = await supabase.from('projects').update({
       name: data.name,
