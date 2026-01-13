@@ -8,6 +8,7 @@ export const env = createEnv({
     SUPABASE_ANON_KEY: z.string().min(1),
     DATABASE_URL: z.string().min(1),
     DATABASE_PASSWORD: z.string().min(1),
+    APP_URL: z.string().url().optional(),
   },
 
   /**
