@@ -239,9 +239,9 @@ function RouteComponent() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="planning">Planning</SelectItem>
-                <SelectItem value="in-development">In Development</SelectItem>
+                <SelectItem value="in_development">In Development</SelectItem>
                 <SelectItem value="completed">Completed</SelectItem>
-                <SelectItem value="on-hold">On Hold</SelectItem>
+                <SelectItem value="on_hold">On Hold</SelectItem>
               </SelectContent>
             </Select>
             <Button variant="outline" size="icon" asChild>
