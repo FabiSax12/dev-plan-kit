@@ -1,9 +1,8 @@
 import { OAuthButtons } from '@/components/auth/OAuthButtons'
+import { useAppForm } from '@/components/custom-form'
 import { Button } from '@/components/ui/button'
-import { FieldGroup, FieldLabel, FieldDescription, Field } from '@/components/ui/field'
-import { Input } from '@/components/ui/input'
+import { FieldGroup, FieldDescription, Field } from '@/components/ui/field'
 import { signUpWithEmailAndPassword } from '@/server-functions/auth'
-import { useForm } from '@tanstack/react-form'
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import z from 'zod'
 
@@ -20,7 +19,7 @@ const formSchema = z.object({
 function RouteComponent() {
     const navigate = useNavigate();
 
-    const form = useForm({
+    const form = useAppForm({
         defaultValues: {
             email: '',
             password: '',
@@ -74,74 +73,34 @@ function RouteComponent() {
                     </p>
                 </div>
 
-                <form.Field name='email'>
-                    {(field) => {
-                        const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
-
-                        return <Field data-invalid={isInvalid}>
-                            <FieldLabel htmlFor={field.name}>Email</FieldLabel>
-                            <Input
-                                id={field.name}
-                                name={field.name}
-                                value={field.state.value}
-                                onBlur={field.handleBlur}
-                                onChange={(e) => field.handleChange(e.target.value)}
-                                aria-invalid={isInvalid}
-                                type="email"
-                                placeholder="m@example.com"
-                                required
-                            />
-                            {/* <FieldDescription>
-                                We&apos;ll use this to contact you. We will not share your
-                                email with anyone else.
-                            </FieldDescription> */}
-                        </Field>
-                    }}
-                </form.Field>
+                <form.AppField name="email">
+                    {(field) => <field.InputField
+                        type="email"
+                        placeholder="m@example.com"
+                        required
+                        label='Email'
+                    />}
+                </form.AppField>
 
                 <Field>
                     <Field className="grid grid-cols-2 gap-4">
-                        <form.Field name='password'>
-                            {(field) => {
-                                const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
+                        <form.AppField name='password'>
+                            {(field) => <field.InputField
+                                type="password"
+                                required
+                                label='Password'
+                            />}
+                        </form.AppField>
 
-                                return <Field data-invalid={isInvalid}>
-                                    <FieldLabel htmlFor={field.name}>Password</FieldLabel>
-                                    <Input
-                                        id={field.name}
-                                        name={field.name}
-                                        value={field.state.value}
-                                        onBlur={field.handleBlur}
-                                        onChange={(e) => field.handleChange(e.target.value)}
-                                        aria-invalid={isInvalid}
-                                        type='password'
-                                        required
-                                    />
-                                </Field>
-                            }}
-                        </form.Field>
-                        <form.Field name='confirmPassword'>
-                            {(field) => {
-                                const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
-
-                                return <Field data-invalid={isInvalid}>
-                                    <FieldLabel htmlFor={field.name}>
-                                        Confirm Password
-                                    </FieldLabel>
-                                    <Input
-                                        id={field.name}
-                                        name={field.name}
-                                        value={field.state.value}
-                                        onBlur={field.handleBlur}
-                                        onChange={(e) => field.handleChange(e.target.value)}
-                                        aria-invalid={isInvalid}
-                                        type='password'
-                                        required
-                                    />
-                                </Field>
-                            }}
-                        </form.Field>
+                        <form.AppField name='confirmPassword'>
+                            {(field) => <field.InputField
+                                type="password"
+                                required
+                                label='Confirm Password'
+                            />}
+                        </form.AppField>
                     </Field>
+
                     <FieldDescription>
                         Must be at least 8 characters long.
                     </FieldDescription>
@@ -157,7 +116,6 @@ function RouteComponent() {
                     Already have an account? <Link to="/login">Sign in</Link>
                 </FieldDescription>
             </FieldGroup>
-
         </form>
     )
 }
