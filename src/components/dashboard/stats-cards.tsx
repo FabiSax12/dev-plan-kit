@@ -1,32 +1,27 @@
 import { Card, CardContent } from "@/components/ui/card"
-import { mockIdeas } from "@/lib/mock-data"
+import { getIdeas } from "@/server-functions/ideas";
 import { getProjects } from "@/server-functions/projects"
-import { useQueries} from "@tanstack/react-query"
-import { createServerFn } from "@tanstack/react-start"
+import { useQueries } from "@tanstack/react-query"
 import { FolderKanban, CheckCircle2, Lightbulb } from "lucide-react"
-
-const getIdeas = createServerFn({method: 'GET'})
-.handler(async () => {
-  await new Promise((resolve) => setTimeout(resolve, 2000));
-  return mockIdeas;
-});
 
 export function StatsCards() {
 
-  const [projectsQuery, ideasQuery] = useQueries({queries: [
-    {
-      queryKey: ['projects'],
-      queryFn: () => getProjects(),
-      initialData: () => [],
-      placeholderData: () => []
-    },
-    {
-      queryKey: ['ideas'],
-      queryFn: () => getIdeas(),
-      initialData: () => [],
-      placeholderData: () => []
-    }
-  ]});
+  const [projectsQuery, ideasQuery] = useQueries({
+    queries: [
+      {
+        queryKey: ['projects'],
+        queryFn: () => getProjects(),
+        initialData: () => [],
+        placeholderData: () => []
+      },
+      {
+        queryKey: ['ideas'],
+        queryFn: () => getIdeas(),
+        initialData: () => [],
+        placeholderData: () => []
+      }
+    ]
+  });
 
   return (
     <div className="grid gap-4 md:grid-cols-3">
@@ -44,7 +39,7 @@ export function StatsCards() {
           </div>
         </CardContent>
       </Card>
-      
+
       <Card>
         <CardContent className="flex items-center gap-4 p-6">
           <div className={`flex h-12 w-12 items-center justify-center rounded-lg bg-emerald-100`}>
