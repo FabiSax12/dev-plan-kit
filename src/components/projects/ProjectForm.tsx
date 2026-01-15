@@ -1,7 +1,5 @@
 import { useState, type ReactNode } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { ProjectFormContext } from './context'
-import { defaultFormValues, type ProjectFormMode, type ProjectFormValues } from './types'
 import { useAppForm } from '@/components/custom-form'
 import { FieldGroup } from '@/components/ui/field'
 import { Label } from '@radix-ui/react-label'
@@ -10,6 +8,29 @@ import { Button } from '@/components/ui/button'
 import { Plus, X } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { useRouter } from 'node_modules/@tanstack/react-router/dist/esm/useRouter'
+import type { ProjectStatus, ProjectType } from '@/domain/Project'
+
+export type ProjectFormValues = {
+  name: string
+  description: string
+  project_type: ProjectType
+  status: ProjectStatus
+  production_url: string
+  repository_url: string
+  tech_stack: string[]
+}
+
+export type ProjectFormMode = 'create' | 'edit'
+
+export const defaultFormValues: ProjectFormValues = {
+  name: '',
+  description: '',
+  project_type: 'personal',
+  status: 'planning',
+  production_url: '',
+  repository_url: '',
+  tech_stack: [],
+}
 
 type ProjectFormProps = {
   // children: ReactNode
@@ -23,7 +44,7 @@ type ProjectFormProps = {
   onCancel?: () => void
 }
 
-export function ProjectForm({
+export const ProjectForm = ({
   // children,
   mode,
   initialData,
@@ -33,7 +54,7 @@ export function ProjectForm({
 
   description,
   onCancel,
-}: ProjectFormProps) {
+}: ProjectFormProps) => {
   const router = useRouter()
   const [techInput, setTechInput] = useState('')
 
@@ -218,37 +239,34 @@ export function ProjectForm({
       </CardContent>
     </Card>
   )
-
-
-
-
-  return (
-    <ProjectFormContext.Provider
-      value={{
-        form,
-        mode,
-        isSubmitting,
-        techInput,
-        setTechInput,
-        addTech,
-        removeTech,
-      }}
-    >
-      <Card className={className}>
-        <CardContent className="pt-6">
-          <form
-            onSubmit={(e) => {
-              e.preventDefault()
-              e.stopPropagation()
-              form.handleSubmit()
-            }}
-            className="space-y-6"
-          >
-            {children}
-          </form>
-        </CardContent>
-      </Card>
-    </ProjectFormContext.Provider>
-  )
 }
 
+// Compound Components Example (Commented Out)
+// return (
+//   <ProjectFormContext.Provider
+//     value={{
+//       form,
+//       mode,
+//       isSubmitting,
+//       techInput,
+//       setTechInput,
+//       addTech,
+//       removeTech,
+//     }}
+//   >
+//     <Card className={className}>
+//       <CardContent className="pt-6">
+//         <form
+//           onSubmit={(e) => {
+//             e.preventDefault()
+//             e.stopPropagation()
+//             form.handleSubmit()
+//           }}
+//           className="space-y-6"
+//         >
+//           {children}
+//         </form>
+//       </CardContent>
+//     </Card>
+//   </ProjectFormContext.Provider>
+// )

@@ -1,6 +1,6 @@
-import { RadioGroupItem, RadioGroupProps } from "@radix-ui/react-radio-group"
+import { RadioGroupProps } from "@radix-ui/react-radio-group"
 import { Field, FieldLabel } from "../ui/field"
-import { RadioGroup } from "../ui/radio-group"
+import { RadioGroup, RadioGroupItem } from "../ui/radio-group"
 import { useFieldContext } from "./context"
 import { Label } from "../ui/label"
 
