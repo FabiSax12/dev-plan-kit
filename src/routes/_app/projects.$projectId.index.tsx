@@ -21,7 +21,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Progress } from "@/components/ui/progress"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import { Project, type ProjectType, type ProjectStatus } from "@/domain/Project"
-import { deleteProject, getProjectById } from '@/server-functions/projects'
+import { deleteProject, getProjectById, getRequirementsDocument } from '@/server-functions/projects'
 import { RequirementsEditor } from '@/components/RequirementsEditor'
 
 interface Epic {
@@ -118,8 +118,23 @@ export const Route = createFileRoute('/_app/projects/$projectId/')({
   component: RouteComponent,
   loader: async ({ params }) => {
     const { projectId } = params;
-    return getProjectById({ data: { id: projectId } });
-  },
+
+    const requirementsDocumentPromise = getRequirementsDocument({ data: { projectId } });
+    const projectPromise = getProjectById({ data: { id: projectId } });
+
+    const [
+      requirementsDocumentResult,
+      projectResult
+    ] = await Promise.all([
+      requirementsDocumentPromise,
+      projectPromise,
+    ]);
+
+    return {
+      projectData: projectResult,
+      requirementsMarkdown: requirementsDocumentResult || "# Project Requirements\n\nStart writing your project requirements here...",
+    }
+  }
 })
 
 function EpicItem({ epic }: { epic: Epic }) {
@@ -191,7 +206,11 @@ function RouteComponent() {
   const { projectId: id } = Route.useParams();
   const navigate = Route.useNavigate();
 
-  const projectData = Route.useLoaderData();
+  const {
+    projectData,
+    requirementsMarkdown
+  } = Route.useLoaderData();
+
   const project = new Project({
     id: projectData.id,
     name: projectData.name,
@@ -341,7 +360,7 @@ function RouteComponent() {
         </TabsContent>
 
         <TabsContent value="requirements" className="space-y-4">
-          <RequirementsEditor contextName={project.getName()} />
+          <RequirementsEditor contextName={project.getName()} initialContent={requirementsMarkdown} />
         </TabsContent>
 
         <TabsContent value="epics" className="space-y-4">

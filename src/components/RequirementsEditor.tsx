@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react"
-import { Send, FileText, Eye, Pencil, Undo2, Copy, Download, Check, Loader2 } from "lucide-react"
+import { Send, FileText, Eye, Pencil, Undo2, Copy, Download, Check, Loader2, Save } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -7,6 +7,8 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { cn } from "@/lib/utils"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
+import { useMutation } from "@tanstack/react-query"
+import { updateRequirementsDocument } from "@/server-functions/projects"
 
 const INITIAL_TEMPLATE = `# Requirements Document
 
@@ -50,6 +52,114 @@ const INITIAL_TEMPLATE = `# Requirements Document
 *Last updated: ${new Date().toLocaleDateString()}*
 `
 
+const AI_MOCK_REPONSES = {
+  USER_PERSONA: `
+
+## User Personas
+
+### Primary Persona: The Power User
+- **Name**: Alex Chen
+- **Role**: Project Manager
+- **Goals**: Efficiently manage multiple projects, track progress
+- **Pain Points**: Current tools are fragmented, lack visibility
+- **Technical Proficiency**: High
+
+### Secondary Persona: The Occasional User  
+- **Name**: Sarah Johnson
+- **Role**: Stakeholder / Executive
+- **Goals**: Quick status updates, high-level overview
+- **Pain Points**: Too much detail, wants summaries
+- **Technical Proficiency**: Medium
+`,
+
+  RISKS: `
+
+## Risks & Mitigation
+
+| Risk | Probability | Impact | Mitigation Strategy |
+|------|-------------|--------|---------------------|
+| Scope creep | High | High | Strict change control process |
+| Technical debt | Medium | High | Regular refactoring sprints |
+| Resource availability | Medium | Medium | Cross-training team members |
+| Third-party dependencies | Low | High | Evaluate alternatives, monitor updates |
+| Security vulnerabilities | Medium | Critical | Regular security audits, penetration testing |
+`,
+
+  CRITERIA_SECTION: `
+
+## Acceptance Criteria
+
+### Feature: User Authentication
+- [ ] Users can register with email and password
+- [ ] Users receive email verification
+- [ ] Users can log in with valid credentials
+- [ ] Users see error message for invalid credentials
+- [ ] Password reset flow works end-to-end
+- [ ] Session expires after 24 hours of inactivity
+
+### Feature: Dashboard
+- [ ] Dashboard loads within 2 seconds
+- [ ] All metrics display current data
+- [ ] Charts are interactive and responsive
+- [ ] Export functionality works for all data views
+`,
+
+  PRIORITY_SECTION: `
+
+## Priority Matrix (MoSCoW)
+
+### Must Have (P0)
+- Core authentication system
+- Main dashboard view
+- Data persistence
+- Basic reporting
+
+### Should Have (P1)
+- Advanced filtering
+- Export functionality
+- Email notifications
+- User preferences
+
+### Could Have (P2)
+- Dark mode
+- Mobile app
+- API integrations
+- Advanced analytics
+
+### Won't Have (This Release)
+- AI-powered insights
+- Multi-language support
+- Offline mode
+`,
+
+  TECH_SECTION: `
+
+## Technical Requirements
+
+### Architecture
+- Microservices architecture with API gateway
+- RESTful API design following OpenAPI 3.0 spec
+- Event-driven communication for async operations
+
+### Infrastructure
+- Cloud-native deployment (AWS/GCP/Azure)
+- Container orchestration with Kubernetes
+- CI/CD pipeline with automated testing
+
+### Data Requirements
+- PostgreSQL for primary data store
+- Redis for caching and sessions
+- Data retention: 7 years for compliance
+
+### Integration Points
+- OAuth 2.0 / OIDC for authentication
+- Webhook support for external systems
+- API rate limiting: 1000 requests/minute
+`
+
+
+}
+
 interface Message {
   id: string
   role: "user" | "assistant"
@@ -75,6 +185,7 @@ export function RequirementsEditor({ initialContent, contextName }: Requirements
   const [historyIndex, setHistoryIndex] = useState(0)
   const [copied, setCopied] = useState(false)
   const [activeTab, setActiveTab] = useState<"edit" | "preview">("preview")
+  const [canSave, setCanSave] = useState(false)
 
   // AI Chat state
   const [messages, setMessages] = useState<Message[]>([
@@ -88,12 +199,28 @@ export function RequirementsEditor({ initialContent, contextName }: Requirements
   const [isLoading, setIsLoading] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
+
+  const modifyDocumentMutation = useMutation({
+    mutationFn: async (content: string) => updateRequirementsDocument({
+      data: {
+        content,
+        projectId: '2'
+      }
+    }),
+    mutationKey: ['update-requirements-document'],
+    onSuccess: () => {
+      setCanSave(false);
+    },
+  });
+
+
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
   }, [messages])
 
   const updateContent = (newContent: string) => {
     setContent(newContent)
+    setCanSave(true)
     const newHistory = history.slice(0, historyIndex + 1)
     newHistory.push(newContent)
     setHistory(newHistory)
@@ -104,7 +231,16 @@ export function RequirementsEditor({ initialContent, contextName }: Requirements
     if (historyIndex > 0) {
       setHistoryIndex(historyIndex - 1)
       setContent(history[historyIndex - 1])
+      setCanSave(true)
     }
+
+    if (historyIndex - 1 === 0) {
+      setCanSave(false)
+    }
+  }
+
+  const handleSave = async () => {
+    await modifyDocumentMutation.mutate(content);
   }
 
   const handleCopy = async () => {
@@ -141,24 +277,7 @@ export function RequirementsEditor({ initialContent, contextName }: Requirements
       let response = ""
 
       if (input.toLowerCase().includes("persona")) {
-        const personaSection = `
-
-## User Personas
-
-### Primary Persona: The Power User
-- **Name**: Alex Chen
-- **Role**: Project Manager
-- **Goals**: Efficiently manage multiple projects, track progress
-- **Pain Points**: Current tools are fragmented, lack visibility
-- **Technical Proficiency**: High
-
-### Secondary Persona: The Occasional User  
-- **Name**: Sarah Johnson
-- **Role**: Stakeholder / Executive
-- **Goals**: Quick status updates, high-level overview
-- **Pain Points**: Too much detail, wants summaries
-- **Technical Proficiency**: Medium
-`
+        const personaSection = AI_MOCK_REPONSES.USER_PERSONA
         newContent = content.replace("## User Personas", personaSection)
         if (!content.includes("## User Personas")) {
           newContent = content + personaSection
@@ -166,105 +285,28 @@ export function RequirementsEditor({ initialContent, contextName }: Requirements
         response =
           "I've added detailed user personas to your document. I included a primary persona (power user) and a secondary persona (occasional user). Feel free to edit these based on your actual user research."
       } else if (input.toLowerCase().includes("risk")) {
-        const riskSection = `
-
-## Risks & Mitigation
-
-| Risk | Probability | Impact | Mitigation Strategy |
-|------|-------------|--------|---------------------|
-| Scope creep | High | High | Strict change control process |
-| Technical debt | Medium | High | Regular refactoring sprints |
-| Resource availability | Medium | Medium | Cross-training team members |
-| Third-party dependencies | Low | High | Evaluate alternatives, monitor updates |
-| Security vulnerabilities | Medium | Critical | Regular security audits, penetration testing |
-`
+        const riskSection = AI_MOCK_REPONSES.RISKS
         newContent = content.includes("## Risks")
           ? content.replace(/## Risks.*?(?=##|$)/s, riskSection)
           : content + riskSection
         response =
           "I've added a risk assessment table with probability, impact, and mitigation strategies. You should review and adjust these based on your project's specific context."
       } else if (input.toLowerCase().includes("acceptance") || input.toLowerCase().includes("criteria")) {
-        const criteriaSection = `
-
-## Acceptance Criteria
-
-### Feature: User Authentication
-- [ ] Users can register with email and password
-- [ ] Users receive email verification
-- [ ] Users can log in with valid credentials
-- [ ] Users see error message for invalid credentials
-- [ ] Password reset flow works end-to-end
-- [ ] Session expires after 24 hours of inactivity
-
-### Feature: Dashboard
-- [ ] Dashboard loads within 2 seconds
-- [ ] All metrics display current data
-- [ ] Charts are interactive and responsive
-- [ ] Export functionality works for all data views
-`
+        const criteriaSection = AI_MOCK_REPONSES.CRITERIA_SECTION
         newContent = content.includes("## Acceptance Criteria")
           ? content.replace(/## Acceptance Criteria.*?(?=##|$)/s, criteriaSection)
           : content + criteriaSection
         response =
           "I've added acceptance criteria sections with checkable items. I included examples for authentication and dashboard features - replace these with your actual features."
       } else if (input.toLowerCase().includes("priority") || input.toLowerCase().includes("matrix")) {
-        const prioritySection = `
-
-## Priority Matrix (MoSCoW)
-
-### Must Have (P0)
-- Core authentication system
-- Main dashboard view
-- Data persistence
-- Basic reporting
-
-### Should Have (P1)
-- Advanced filtering
-- Export functionality
-- Email notifications
-- User preferences
-
-### Could Have (P2)
-- Dark mode
-- Mobile app
-- API integrations
-- Advanced analytics
-
-### Won't Have (This Release)
-- AI-powered insights
-- Multi-language support
-- Offline mode
-`
+        const prioritySection = AI_MOCK_REPONSES.PRIORITY_SECTION
         newContent = content.includes("## Priority")
           ? content.replace(/## Priority.*?(?=##|$)/s, prioritySection)
           : content + prioritySection
         response =
           "I've added a MoSCoW priority matrix to help categorize requirements. Adjust the items based on your stakeholder discussions and business value."
       } else if (input.toLowerCase().includes("technical") || input.toLowerCase().includes("expand")) {
-        const techSection = `
-
-## Technical Requirements
-
-### Architecture
-- Microservices architecture with API gateway
-- RESTful API design following OpenAPI 3.0 spec
-- Event-driven communication for async operations
-
-### Infrastructure
-- Cloud-native deployment (AWS/GCP/Azure)
-- Container orchestration with Kubernetes
-- CI/CD pipeline with automated testing
-
-### Data Requirements
-- PostgreSQL for primary data store
-- Redis for caching and sessions
-- Data retention: 7 years for compliance
-
-### Integration Points
-- OAuth 2.0 / OIDC for authentication
-- Webhook support for external systems
-- API rate limiting: 1000 requests/minute
-`
+        const techSection = AI_MOCK_REPONSES.TECH_SECTION
         newContent = content.includes("## Technical Requirements")
           ? content.replace(/## Technical Requirements.*?(?=##|$)/s, techSection)
           : content + techSection
@@ -310,6 +352,21 @@ export function RequirementsEditor({ initialContent, contextName }: Requirements
               <Undo2 className="h-3.5 w-3.5 mr-1" />
               Undo
             </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleSave}
+              disabled={!canSave || modifyDocumentMutation.isPending}
+              className="h-8"
+            >
+              {modifyDocumentMutation.isPending ? <>
+                <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />
+                Saving...
+              </> : <>
+                <Save className="h-3.5 w-3.5 mr-1" />
+                Save
+              </>}
+            </Button>
             <Button variant="ghost" size="sm" onClick={handleCopy} className="h-8">
               {copied ? <Check className="h-3.5 w-3.5 mr-1" /> : <Copy className="h-3.5 w-3.5 mr-1" />}
               {copied ? "Copied" : "Copy"}
@@ -332,19 +389,19 @@ export function RequirementsEditor({ initialContent, contextName }: Requirements
           ) : (
             <ScrollArea className="h-full">
               <div className="p-6 prose prose-sm dark:prose-invert max-w-none">
-                <ReactMarkdown 
-                    remarkPlugins={[remarkGfm]}
-                    components={{
-                        h1: ({node, ...props}) => <h1 className="text-4xl font-bold mb-4" {...props} />,
-                        h2: ({node, ...props}) => <h2 className="text-3xl font-bold mb-3" {...props} />,
-                        h3: ({node, ...props}) => <h3 className="text-2xl font-bold mb-2" {...props} />,
-                        h4: ({node, ...props}) => <h4 className="text-xl font-bold mb-2" {...props} />,
-                        p: ({node, ...props}) => <p className="mb-4" {...props} />,
-                        ul: ({node, ...props}) => <ul className="list-disc ml-6 mb-4" {...props} />,
-                        ol: ({node, ...props}) => <ol className="list-decimal ml-6 mb-4" {...props} />,
-                    }}
+                <ReactMarkdown
+                  remarkPlugins={[remarkGfm]}
+                  components={{
+                    h1: ({ node, ...props }) => <h1 className="text-4xl font-bold mb-4" {...props} />,
+                    h2: ({ node, ...props }) => <h2 className="text-3xl font-bold mb-3" {...props} />,
+                    h3: ({ node, ...props }) => <h3 className="text-2xl font-bold mb-2" {...props} />,
+                    h4: ({ node, ...props }) => <h4 className="text-xl font-bold mb-2" {...props} />,
+                    p: ({ node, ...props }) => <p className="mb-4" {...props} />,
+                    ul: ({ node, ...props }) => <ul className="list-disc ml-6 mb-4" {...props} />,
+                    ol: ({ node, ...props }) => <ol className="list-decimal ml-6 mb-4" {...props} />,
+                  }}
                 >
-                    {content}
+                  {content}
                 </ReactMarkdown>
               </div>
             </ScrollArea>
@@ -371,7 +428,7 @@ export function RequirementsEditor({ initialContent, contextName }: Requirements
                 >
                   <ReactMarkdown
                     remarkPlugins={[remarkGfm]}
-                    // className="prose prose-sm dark:prose-invert max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0"
+                  // className="prose prose-sm dark:prose-invert max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0"
                   >
                     {message.content}
                   </ReactMarkdown>
@@ -434,3 +491,6 @@ export function RequirementsEditor({ initialContent, contextName }: Requirements
     </div>
   )
 }
+
+
+

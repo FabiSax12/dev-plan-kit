@@ -127,3 +127,62 @@ export const updateProject = createServerFn({
       throw new Error('Failed to update project');
     }
   });
+
+export const getRequirementsDocument = createServerFn({
+  method: "GET"
+}).inputValidator(z.object({
+  projectId: z.string(),
+})).handler(async ({data}): Promise<string | null> => {
+  const supabase = getSupabaseServerClient();
+
+  const { data: fileData, error } = await supabase.storage
+    .from('project-requirements-markdowns')
+    .download(`${data.projectId}.md`);
+
+  if (error) {
+    console.error('Error downloading requirements document:', error);
+    return null;
+  }
+
+  const text = await fileData.text();
+  return text;
+});
+
+export const uploadRequirementsDocument = createServerFn({
+  method: "POST"
+}).inputValidator(z.object({
+  projectId: z.string(),
+  content: z.string(),
+})).handler(async ({data}): Promise<void> => {
+  const supabase = getSupabaseServerClient();
+  
+  const { error } = await supabase.storage
+    .from('project-requirements-markdowns')
+    .upload(`${data.projectId}.md`, data.content, { upsert: true });
+
+  if (error) {
+    console.error('Error uploading requirements document:', error);
+    throw new Error('Failed to upload requirements document');
+  }
+});
+
+export const updateRequirementsDocument = createServerFn({
+  method: "POST"
+}).inputValidator(z.object({
+  projectId: z.string(),
+  content: z.string(),
+})).handler(async ({data}): Promise<void> => {
+  const supabase = getSupabaseServerClient();
+  
+  const { error } = await supabase.storage
+    .from('project-requirements-markdowns')
+    .update(`${data.projectId}.md`, data.content, { 
+      upsert: true, 
+      contentType: 'text/markdown',
+    });
+
+  if (error) {
+    console.error('Error uploading requirements document:', error);
+    throw new Error('Failed to upload requirements document');
+  }
+});
