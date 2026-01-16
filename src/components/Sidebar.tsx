@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useState } from "react"
-import { Link, useLocation} from "@tanstack/react-router"
+import { Link } from "@tanstack/react-router"
 import { Route } from "@/routes/_app/route"
 import { supabase } from "@/lib/supabase.client"
 
@@ -15,8 +15,7 @@ const navItems = [
 ]
 
 export function Sidebar() {
-  const {user} = Route.useRouteContext();
-  const {pathname} = useLocation()
+  const { user } = Route.useRouteContext()
   const [mobileOpen, setMobileOpen] = useState(false)
   const navigate = Route.useNavigate();
 
@@ -27,7 +26,7 @@ export function Sidebar() {
       console.error("Error signing out:", error.message);
     }
 
-    navigate({to: '/login'});
+    navigate({ to: '/login' });
   }
 
   return (
@@ -75,25 +74,22 @@ export function Sidebar() {
 
           {/* Navigation */}
           <nav className="flex-1 space-y-1 px-3 py-4">
-            {navItems.map((item) => {
-              const isActive = pathname === item.href || pathname?.startsWith(`${item.href}/`)
-              return (
-                <Link
-                  key={item.href}
-                  to={item.href}
-                  onClick={() => setMobileOpen(false)}
-                  className={cn(
-                    "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-                    isActive
-                      ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground hover:bg-muted hover:text-foreground",
-                  )}
-                >
-                  <item.icon className="h-4 w-4" />
-                  {item.label}
-                </Link>
-              )
-            })}
+            {navItems.map((item) => <Link
+              key={item.href}
+              to={item.href}
+              onClick={() => setMobileOpen(false)}
+              className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors"
+              activeProps={{
+                className: "bg-primary text-primary-foreground"
+              }}
+              inactiveProps={{
+                className: "text-muted-foreground hover:bg-muted hover:text-foreground"
+              }}
+              activeOptions={{ exact: false }}
+            >
+              <item.icon className="h-4 w-4" />
+              {item.label}
+            </Link>)}
           </nav>
 
           {/* Bottom section */}
@@ -105,7 +101,7 @@ export function Sidebar() {
               <Settings className="h-4 w-4" />
               Settings
             </Link>
-            <button 
+            <button
               className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
               onClick={handleLogout}
             >
