@@ -14,6 +14,8 @@ import type { QueryClient } from '@tanstack/react-query'
 import { getSupabaseServerClient } from '@/lib/supabase.server'
 import { createServerFn } from '@tanstack/react-start'
 import { User } from '@supabase/supabase-js'
+import { Toaster } from "@/components/ui/sonner"
+import { ThemeProvider } from '@/lib/ThemeProvider'
 
 const getUser = createServerFn({ method: 'GET' }).handler(async () => {
   const supabase = getSupabaseServerClient()
@@ -62,19 +64,22 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <HeadContent />
       </head>
       <body>
-        {children}
-        <TanStackDevtools
-          config={{
-            position: 'bottom-right',
-          }}
-          plugins={[
-            {
-              name: 'Tanstack Router',
-              render: <TanStackRouterDevtoolsPanel />,
-            },
-            TanStackQueryDevtools,
-          ]}
-        />
+        <ThemeProvider>
+          {children}
+          <Toaster position='bottom-right' />
+          <TanStackDevtools
+            config={{
+              position: 'bottom-right',
+            }}
+            plugins={[
+              {
+                name: 'Tanstack Router',
+                render: <TanStackRouterDevtoolsPanel />,
+              },
+              TanStackQueryDevtools,
+            ]}
+          />
+        </ThemeProvider>
         <Scripts />
       </body>
     </html>
