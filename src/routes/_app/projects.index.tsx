@@ -12,17 +12,7 @@ export const Route = createFileRoute('/_app/projects/')({
 
 function RouteComponent() {
   const projectsData = Route.useLoaderData();
-  const projects = projectsData.map(data => new Project({
-    id: data.id,
-    name: data.name,
-    description: data.description,
-    status: data.status,
-    projectType: data.project_type,
-    url: data.production_url,
-    repoUrl: data.repository_url,
-    techStack: data.tech_stack || [],
-    updatedAt: data.updated_at,
-  }))
+  const projects = projectsData.map(Project.fromJSONData);
 
   return (
     <div className="space-y-6">

@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router"
-import { Card, CardContent } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { ExternalLink, Github, Eye, Pencil } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -26,28 +26,18 @@ export function ProjectCard({ project }: { project: Project }) {
   const type = typeConfig[project.getProjectType()]
 
   return (
-    <Card className="group transition-shadow hover:shadow-md">
-      <CardContent className="p-5">
+    <Card className="group transition-shadow hover:shadow-md gap-0">
+      <CardHeader>
+        <CardTitle>{project.getName()}</CardTitle>
+      </CardHeader>
+      <CardContent>
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
-            <Link to={'/projects/$projectId'} params={{ projectId: project.getId() }} className="block">
+            {/* <Link to={'/projects/$projectId'} params={{ projectId: project.getId() }} className="block">
               <h3 className="font-semibold truncate group-hover:text-primary transition-colors">{project.getName()}</h3>
-            </Link>
-            <p className="mt-1 text-sm text-muted-foreground line-clamp-2">{project.getDescription()}</p>
-          </div>
-          <div className="flex gap-1">
-            <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
-              <Link to={'/projects/$projectId'} params={{ projectId: project.getId() }}>
-                <Eye className="h-4 w-4" />
-                <span className="sr-only">View project</span>
-              </Link>
-            </Button>
-            <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
-              <Link to={'/projects/$projectId/edit'} params={{ projectId: project.getId() }}>
-                <Pencil className="h-4 w-4" />
-                <span className="sr-only">Edit project</span>
-              </Link>
-            </Button>
+              </Link> */}
+            <CardDescription>{project.getDescription()}</CardDescription>
+            {/* <p className="mt-1 text-sm text-muted-foreground line-clamp-2">{project.getDescription()}</p> */}
           </div>
         </div>
 
@@ -85,11 +75,14 @@ export function ProjectCard({ project }: { project: Project }) {
               </a>
             )}
           </div>
-          <span className="text-xs text-muted-foreground">Updated {project.getUpdatedAt()}</span>
+          <span className="text-xs text-muted-foreground">Updated {Intl.DateTimeFormat().format(new Date(project.getUpdatedAt()))}</span>
         </div>
 
+
+      </CardContent>
+      <CardFooter className="flex justify-between items-center mt-3">
         {project.getTechStack().length > 0 && (
-          <div className="mt-3 flex flex-wrap gap-1">
+          <div className="flex flex-wrap gap-1">
             {project.getTechStack().slice(0, 3).map((tech) => (
               <Badge key={tech} variant="outline" className="text-xs font-normal">
                 {tech}
@@ -102,7 +95,21 @@ export function ProjectCard({ project }: { project: Project }) {
             )}
           </div>
         )}
-      </CardContent>
+        <div className="flex gap-1">
+          <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
+            <Link to={'/projects/$projectId'} params={{ projectId: project.getId() }}>
+              <Eye className="h-4 w-4" />
+              <span className="sr-only">View project</span>
+            </Link>
+          </Button>
+          <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
+            <Link to={'/projects/$projectId/edit'} params={{ projectId: project.getId() }}>
+              <Pencil className="h-4 w-4" />
+              <span className="sr-only">Edit project</span>
+            </Link>
+          </Button>
+        </div>
+      </CardFooter>
     </Card>
   )
 }

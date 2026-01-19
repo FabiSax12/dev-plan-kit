@@ -60,7 +60,7 @@ export function ProjectsList({ projects }: { projects: Project[] }) {
 
       {/* Projects Grid */}
       {filteredProjects.length > 0 ? (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
           {filteredProjects.map((project) => (
             <ProjectCard key={project.getId()} project={project} />
           ))}

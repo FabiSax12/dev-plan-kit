@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button'
 import { createFileRoute, Link, useRouter } from '@tanstack/react-router'
 import { ArrowLeft } from 'lucide-react'
 import { useMutation } from '@tanstack/react-query'
-import { getProjectById, updateProject, updateProjectSchema } from '@/server-functions/projects'
+import { getProjectById, updateProject } from '@/server-functions/projects'
 import { ProjectForm, type ProjectFormValues } from '@/components/projects/ProjectForm'
 import { Project } from '@/domain/Project'
 import z from 'zod'
@@ -20,30 +20,26 @@ export const Route = createFileRoute('/_app/projects/$projectId/edit/')({
 
 function RouteComponent() {
   const router = useRouter()
-  const userId = Route.useRouteContext().user?.id!
   const { projectId } = Route.useParams()
   const { projectData } = Route.useLoaderData()
 
-  const project = new Project({
-    id: projectData.id,
-    name: projectData.name,
-    description: projectData.description,
-    projectType: projectData.project_type,
-    status: projectData.status,
-    url: projectData.production_url,
-    repoUrl: projectData.repository_url,
-    techStack: projectData.tech_stack ?? [],
-    updatedAt: projectData.updated_at,
-  })
+  const project = Project.fromJSONData(projectData)
 
   const editProjectMutation = useMutation({
-    mutationFn: async (data: z.infer<typeof updateProjectSchema>) =>
-      await updateProject({ data }),
+    mutationFn: async (data: z.infer<typeof Project._schemas.updateProjectSchema>) => await updateProject({ data: { ...data, id: projectId } }),
+    onSuccess: (...args) => {
+      args[3].client.invalidateQueries({
+        queryKey: ["projects"],
+      })
+      args[3].client.invalidateQueries({
+        queryKey: ["projects", projectId],
+      })
+    },
   })
 
   const handleSubmit = async (values: ProjectFormValues) => {
     console.log('Submitting edited project:', values)
-    await editProjectMutation.mutateAsync({ ...values, user_id: userId, id: projectId })
+    await editProjectMutation.mutateAsync({ ...values, id: projectId })
     router.navigate({ to: '/projects' })
   }
 

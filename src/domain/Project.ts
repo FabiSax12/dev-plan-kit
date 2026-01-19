@@ -23,6 +23,7 @@ export class Project {
         }),
 
         updateProjectSchema: z.object({
+            id: z.number().int().positive().or(z.string()),
             name: z.string().min(1).max(100).optional(),
             description: z.string().min(1).max(2000).optional(),
             status: z.enum(["planning", "in_development", "completed", "on_hold"]).optional(),

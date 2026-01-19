@@ -80,11 +80,7 @@ export const deleteProject = createServerFn({
 export const updateProject = createServerFn({
   method: "POST"
 })
-  .inputValidator(
-    z.object({
-      id: Project._schemas.plainProjectSchema.shape.id,
-    }).extend(Project._schemas.updateProjectSchema.shape)
-  )
+  .inputValidator(Project._schemas.updateProjectSchema)
   .handler(async ({ data }): Promise<void> => {
     const supabase = getSupabaseServerClient();
 

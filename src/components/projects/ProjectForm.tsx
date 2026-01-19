@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { useAppForm } from '@/components/custom-form'
-import { FieldGroup } from '@/components/ui/field'
+import { FieldGroup, FieldLabel } from '@/components/ui/field'
 import { Label } from '@radix-ui/react-label'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -18,6 +18,7 @@ export type ProjectFormValues = {
   production_url: string
   repository_url: string
   tech_stack: string[]
+  extra_urls: { name: string; url: string }[]
 }
 
 export type ProjectFormMode = 'create' | 'edit'
@@ -30,6 +31,7 @@ export const defaultFormValues: ProjectFormValues = {
   production_url: '',
   repository_url: '',
   tech_stack: [],
+  extra_urls: [],
 }
 
 type ProjectFormProps = {
@@ -57,6 +59,7 @@ export const ProjectForm = ({
 }: ProjectFormProps) => {
   const router = useRouter()
   const [techInput, setTechInput] = useState('')
+  const [extraUrl, setExtraUrl] = useState({ name: '', url: '' })
 
   const form = useAppForm({
     defaultValues: {
@@ -76,6 +79,17 @@ export const ProjectForm = ({
       form.setFieldValue('tech_stack', [...currentStack, trimmedInput])
     }
     setTechInput('')
+  }
+
+  const addExtraUrl = () => {
+    const currentUrls = form.getFieldValue('extra_urls')
+    const trimmedName = extraUrl.name.trim()
+    const trimmedUrl = extraUrl.url.trim()
+
+    if (trimmedName && trimmedUrl && !currentUrls.find((u) => u.url === trimmedUrl)) {
+      form.setFieldValue('extra_urls', [...currentUrls, { name: trimmedName, url: trimmedUrl }])
+      setExtraUrl({ name: '', url: '' })
+    }
   }
 
   const removeTech = (tech: string) => {
@@ -178,6 +192,45 @@ export const ProjectForm = ({
                 placeholder="https://github.com/username/repository"
                 type="url"
               />
+            )}
+          </form.AppField>
+          <form.AppField name='extra_urls'>
+            {(field) => (
+              <FieldGroup>
+                <FieldLabel>Extra URLs</FieldLabel>
+                <div className="flex gap-2">
+                  <Input
+                    className='flex-1'
+                    value={extraUrl.name}
+                    onChange={(e) => setExtraUrl({ ...extraUrl, name: e.target.value })}
+                    placeholder="Figma, Repo, Docs..."
+                  />
+                  <Input
+                    className='flex-2'
+                    value={extraUrl.url}
+                    onChange={(e) => setExtraUrl({ ...extraUrl, url: e.target.value })}
+                    placeholder="https://..."
+                    type='url'
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={addExtraUrl}
+                    disabled={!extraUrl.name.trim() || !extraUrl.url.trim()}
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+
+
+                {field.state.value.length > 0 && (
+                  <div className="gap-2">
+                    {field.state.value.map(({ name, url }) => (
+                      <p key={url}>{name}: {url}</p>
+                    ))}
+                  </div>
+                )}
+              </FieldGroup>
             )}
           </form.AppField>
 
