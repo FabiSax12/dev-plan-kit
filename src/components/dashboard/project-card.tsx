@@ -3,23 +3,8 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Badge } from "@/components/ui/badge"
 import { ExternalLink, Github, Eye, Pencil } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Project, ProjectStatus, ProjectType } from "@/domain/Project"
-
-
-
-
-
-const statusConfig: Record<ProjectStatus, { label: string; className: string }> = {
-  planning: { label: "Planning", className: "bg-blue-100 text-blue-700" },
-  "in_development": { label: "In Development", className: "bg-amber-100 text-amber-700" },
-  completed: { label: "Completed", className: "bg-emerald-100 text-emerald-700" },
-  "on_hold": { label: "On Hold", className: "bg-gray-100 text-gray-700" },
-}
-
-const typeConfig: Record<ProjectType, { label: string; className: string }> = {
-  personal: { label: "Personal", className: "bg-purple-100 text-purple-700" },
-  work: { label: "Client Work", className: "bg-orange-100 text-orange-700" },
-}
+import { Project } from "@/domain/Project"
+import { statusConfig, typeConfig } from "@/lib/themeConfig"
 
 export function ProjectCard({ project }: { project: Project }) {
   const status = statusConfig[project.getStatus()]

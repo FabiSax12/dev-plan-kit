@@ -9,15 +9,9 @@ import {
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Project, type ProjectType, type ProjectStatus } from "@/domain/Project"
+import { Project, type ProjectStatus } from "@/domain/Project"
 import { deleteProject, getProjectById } from '@/server-functions/projects'
-
-const statusConfig: Record<ProjectStatus, { label: string; className: string }> = {
-  planning: { label: "Planning", className: "bg-blue-100 text-blue-700" },
-  "in_development": { label: "In Development", className: "bg-amber-100 text-amber-700" },
-  completed: { label: "Completed", className: "bg-emerald-100 text-emerald-700" },
-  "on_hold": { label: "On Hold", className: "bg-gray-100 text-gray-700" },
-}
+import { statusConfig, typeConfig } from '@/lib/themeConfig'
 
 export const Route = createFileRoute('/_app/projects/$projectId/_layout')({
   component: RouteComponent,
@@ -53,11 +47,6 @@ function RouteComponent() {
   const project = Project.fromJSONData(projectData);
 
   const [status, setStatus] = useState<ProjectStatus>(project.getStatus());
-
-  const typeConfig: Record<ProjectType, { label: string; className: string }> = {
-    personal: { label: "Personal", className: "bg-purple-100 text-purple-700" },
-    work: { label: "Client Work", className: "bg-orange-100 text-orange-700" },
-  }
 
   const handleDeleteProject = async () => {
     await deleteProject({ data: { id } });
