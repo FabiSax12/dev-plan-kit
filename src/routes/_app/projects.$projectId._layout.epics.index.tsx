@@ -115,17 +115,7 @@ function RouteComponent() {
 
   const { projectData, epicsData } = Route.useLoaderData()
 
-  const project = new Project({
-    id: projectData.id,
-    name: projectData.name,
-    description: projectData.description,
-    status: projectData.status,
-    projectType: projectData.project_type,
-    url: projectData.production_url,
-    repoUrl: projectData.repository_url,
-    techStack: projectData.tech_stack || [],
-    updatedAt: projectData.updated_at,
-  });
+  const project = Project.fromJSONData(projectData);
 
   return <div className='[view-transition-name:main-content]'>
     <div className="flex items-center justify-between">

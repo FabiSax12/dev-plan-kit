@@ -1,35 +1,28 @@
-import { ProjectData } from "@/domain/Project";
+import { Project, ProjectData } from "@/domain/Project";
 
 import { getSupabaseServerClient } from "@/lib/supabase.server";
 import { createServerFn } from "@tanstack/react-start";
 import z from "zod";
 
-export const getProjects = createServerFn({method: 'GET'})
-.handler(async (): Promise<ProjectData[]> => {
-  const supabase = getSupabaseServerClient();
+export const getProjects = createServerFn({ method: 'GET' })
+  .handler(async (): Promise<ProjectData[]> => {
+    const supabase = getSupabaseServerClient();
 
-  const user = await supabase.auth.getUser();
+    const projectsQuery = await supabase.from('projects').select('*').order('updated_at', { ascending: false });
 
-  if (user.error || !user.data.user) {
-    console.error('Error fetching user:', user.error);
-    return [];
-  }
+    if (projectsQuery.error) {
+      console.error('Error fetching projects:', projectsQuery.error);
+      return [];
+    }
 
-  const projectsQuery = await supabase.from('projects').select('*');
-
-  if (projectsQuery.error) {
-    console.error('Error fetching projects:', projectsQuery.error);
-    return [];
-  }
-
-  return projectsQuery.data;
-});
+    return projectsQuery.data;
+  });
 
 export const getProjectById = createServerFn({
   method: "GET"
 }).inputValidator(z.object({
-  id: z.string(),
-})).handler(async ({data}): Promise<ProjectData> => {
+  id: Project._schemas.plainProjectSchema.shape.id,
+})).handler(async ({ data }): Promise<ProjectData> => {
   const supabase = getSupabaseServerClient();
 
   const projectQuery = await supabase.from('projects').select('*').eq('id', data.id).single();
@@ -42,35 +35,25 @@ export const getProjectById = createServerFn({
   return projectQuery.data;
 });
 
-export const createProjectSchema = z.object({
-  name: z.string(),
-  description: z.string().optional(),
-  project_type: z.enum(['personal', 'work']).optional(),
-  status: z.enum(['planning', 'in_development', 'completed', 'on_hold']).optional(),
-  production_url: z.string().optional(),
-  repository_url: z.string().optional(),
-  tech_stack: z.array(z.string()).optional(),
-  user_id: z.string(),
-});
-
 export const createProject = createServerFn({
   method: "POST"
 })
-  .inputValidator(createProjectSchema)
-  .handler(async ({data}): Promise<void> => {
+  .inputValidator(Project._schemas.createProjectSchema)
+  .handler(async ({ data }): Promise<void> => {
 
     const supabase = getSupabaseServerClient();
 
     const createProjectQuery = await supabase.from('projects').insert({
       name: data.name,
       description: data.description,
-      project_type: data.project_type || 'personal',
+      project_type: data.projectType || 'personal',
       status: data.status,
-      production_url: data.production_url,
-      repository_url: data.repository_url,
-      tech_stack: data.tech_stack,
-      user_id: data.user_id,
-    });
+      production_url: data.productionUrl,
+      repository_url: data.repositoryUrl,
+      tech_stack: data.techStack,
+      user_id: data.userId,
+      extra_urls: data.extraUrls,
+    }).select("id");
 
     if (createProjectQuery.error) {
       console.error('Error creating project:', createProjectQuery.error);
@@ -81,9 +64,10 @@ export const createProject = createServerFn({
 export const deleteProject = createServerFn({
   method: "POST"
 }).inputValidator(z.object({
-  id: z.string(),
-})).handler(async ({data}): Promise<void> => {
+  id: Project._schemas.plainProjectSchema.shape.id,
+})).handler(async ({ data }): Promise<void> => {
   const supabase = getSupabaseServerClient();
+  console.log("Deleting project " + data.id)
   const deleteProjectQuery = await supabase.from('projects').delete().eq('id', data.id);
 
   if (deleteProjectQuery.error) {
@@ -93,33 +77,26 @@ export const deleteProject = createServerFn({
 
 });
 
-export const updateProjectSchema = z.object({
-  id: z.string(),
-  name: z.string().optional(),
-  description: z.string().optional(),
-  project_type: z.enum(['personal', 'work']).optional(),
-  status: z.enum(['planning', 'in_development', 'completed', 'on_hold']).optional(),
-  production_url: z.string().optional().nullable(),
-  repository_url: z.string().optional().nullable(),
-  tech_stack: z.array(z.string()).optional(),
-  user_id: z.string(),
-});
-
 export const updateProject = createServerFn({
   method: "POST"
 })
-  .inputValidator(updateProjectSchema)
-  .handler(async ({data}): Promise<void> => {
+  .inputValidator(
+    z.object({
+      id: Project._schemas.plainProjectSchema.shape.id,
+    }).extend(Project._schemas.updateProjectSchema.shape)
+  )
+  .handler(async ({ data }): Promise<void> => {
     const supabase = getSupabaseServerClient();
 
     const updateProjectQuery = await supabase.from('projects').update({
       name: data.name,
       description: data.description,
-      project_type: data.project_type,
+      project_type: data.projectType,
       status: data.status,
-      production_url: data.production_url,
-      repository_url: data.repository_url,
-      tech_stack: data.tech_stack,
+      production_url: data.productionUrl,
+      repository_url: data.repositoryUrl,
+      tech_stack: data.techStack,
+      extra_urls: data.extraUrls,
     }).eq('id', data.id);
 
     if (updateProjectQuery.error) {
@@ -131,8 +108,8 @@ export const updateProject = createServerFn({
 export const getRequirementsDocument = createServerFn({
   method: "GET"
 }).inputValidator(z.object({
-  projectId: z.string(),
-})).handler(async ({data}): Promise<string | null> => {
+  projectId: Project._schemas.plainProjectSchema.shape.id,
+})).handler(async ({ data }): Promise<string | null> => {
   const supabase = getSupabaseServerClient();
 
   const { data: fileData, error } = await supabase.storage
@@ -151,11 +128,11 @@ export const getRequirementsDocument = createServerFn({
 export const uploadRequirementsDocument = createServerFn({
   method: "POST"
 }).inputValidator(z.object({
-  projectId: z.string(),
+  projectId: Project._schemas.plainProjectSchema.shape.id,
   content: z.string(),
-})).handler(async ({data}): Promise<void> => {
+})).handler(async ({ data }): Promise<void> => {
   const supabase = getSupabaseServerClient();
-  
+
   const { error } = await supabase.storage
     .from('project-requirements-markdowns')
     .upload(`${data.projectId}.md`, data.content, { upsert: true });
@@ -169,15 +146,17 @@ export const uploadRequirementsDocument = createServerFn({
 export const updateRequirementsDocument = createServerFn({
   method: "POST"
 }).inputValidator(z.object({
-  projectId: z.string(),
+  projectId: Project._schemas.plainProjectSchema.shape.id,
   content: z.string(),
-})).handler(async ({data}): Promise<void> => {
+})).handler(async ({ data }): Promise<void> => {
   const supabase = getSupabaseServerClient();
-  
+
+  console.log(`Updating file ${data.projectId}.md`);
+
   const { error } = await supabase.storage
     .from('project-requirements-markdowns')
-    .update(`${data.projectId}.md`, data.content, { 
-      upsert: true, 
+    .update(`${data.projectId}.md`, data.content, {
+      upsert: true,
       contentType: 'text/markdown',
     });
 

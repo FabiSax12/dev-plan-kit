@@ -30,19 +30,9 @@ function RouteComponent() {
 
   const { projectData, requirementsMarkdown } = Route.useLoaderData();
 
-  const project = new Project({
-    id: projectData.id,
-    name: projectData.name,
-    description: projectData.description,
-    projectType: projectData.project_type,
-    status: projectData.status,
-    url: projectData.production_url,
-    repoUrl: projectData.repository_url,
-    techStack: projectData.tech_stack ?? [],
-    updatedAt: projectData.updated_at,
-  });
+  const project = Project.fromJSONData(projectData);
 
   return <div className='[view-transition-name:main-content]'>
-    <RequirementsEditor contextName={project.getName()} initialContent={requirementsMarkdown} />
+    <RequirementsEditor projectId={project.getId()} contextName={project.getName()} initialContent={requirementsMarkdown} />
   </div>
 }

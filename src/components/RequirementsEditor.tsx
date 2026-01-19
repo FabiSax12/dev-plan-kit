@@ -175,11 +175,12 @@ const SUGGESTED_PROMPTS = [
 ]
 
 interface RequirementsEditorProps {
+  projectId: string
   initialContent?: string
   contextName?: string
 }
 
-export function RequirementsEditor({ initialContent, contextName }: RequirementsEditorProps) {
+export function RequirementsEditor({ initialContent, contextName, projectId }: RequirementsEditorProps) {
   const [content, setContent] = useState(initialContent || INITIAL_TEMPLATE)
   const [history, setHistory] = useState<string[]>([initialContent || INITIAL_TEMPLATE])
   const [historyIndex, setHistoryIndex] = useState(0)
@@ -204,13 +205,18 @@ export function RequirementsEditor({ initialContent, contextName }: Requirements
     mutationFn: async (content: string) => updateRequirementsDocument({
       data: {
         content,
-        projectId: '2'
+        projectId
       }
     }),
     mutationKey: ['update-requirements-document'],
     onSuccess: () => {
       setCanSave(false);
     },
+    onError: (error) => {
+      console.error("Error updating requirements document:", error);
+      alert("There was an error saving the document. Please try again.");
+    },
+
   });
 
 
@@ -240,7 +246,7 @@ export function RequirementsEditor({ initialContent, contextName }: Requirements
   }
 
   const handleSave = async () => {
-    await modifyDocumentMutation.mutate(content);
+    await modifyDocumentMutation.mutateAsync(content);
   }
 
   const handleCopy = async () => {
@@ -410,7 +416,7 @@ export function RequirementsEditor({ initialContent, contextName }: Requirements
       </div>
 
       {/* AI Chat Section */}
-      <div className="w-full lg:w-96 flex flex-col border rounded-lg overflow-hidden">
+      <div className="w-full lg:w-96 flex flex-col border rounded-lg overflow-hidden hidden">
         <div className="flex items-center gap-2 border-b px-4 py-3 bg-muted/30">
           <FileText className="h-4 w-4 text-muted-foreground" />
           <span className="font-medium text-sm">AI Assistant</span>
