@@ -50,17 +50,7 @@ function RouteComponent() {
     projectData
   } = Route.useLoaderData();
 
-  const project = new Project({
-    id: projectData.id,
-    name: projectData.name,
-    description: projectData.description,
-    status: projectData.status,
-    projectType: projectData.project_type,
-    url: projectData.production_url,
-    repoUrl: projectData.repository_url,
-    techStack: projectData.tech_stack || [],
-    updatedAt: projectData.updated_at,
-  });
+  const project = Project.fromJSONData(projectData);
 
   const [status, setStatus] = useState<ProjectStatus>(project.getStatus());
 
@@ -97,7 +87,7 @@ function RouteComponent() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-6">
       {/* Header */}
       <div className="flex flex-col gap-4">
         <Button variant="ghost" size="sm" className="w-fit" asChild>
@@ -146,70 +136,6 @@ function RouteComponent() {
 
 
       </div>
-      {/* Project Info */}
-      {/* <Card>
-        <CardContent className="p-6">
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <div>
-              <p className="text-sm text-muted-foreground">Type</p>
-              <Badge variant="secondary" className={"mt-1 ${typeConfig[project.getType()].className}"}>
-                {typeConfig[project.getProjectType()].label}
-              </Badge>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Status</p>
-              <Badge variant="secondary" className={"mt-1 ${statusConfig[status].className}"}>
-                {statusConfig[status].label}
-              </Badge>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Project URL</p>
-              {project.getUrl() ? (
-                <a
-                  href={project.getUrl()}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-1 text-sm text-primary hover:underline mt-1"
-                >
-                  <ExternalLink className="h-3 w-3" />
-                  {project.getUrl()?.replace(/^https?:\/\//, "")}
-                </a>
-              ) : (
-                <p className="text-sm text-muted-foreground mt-1">Not set</p>
-              )}
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Repository</p>
-              {project.getRepoUrl() ? (
-                <a
-                  href={project.getRepoUrl()}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-1 text-sm text-primary hover:underline mt-1"
-                >
-                  <Github className="h-3 w-3" />
-                  View on GitHub
-                </a>
-              ) : (
-                <p className="text-sm text-muted-foreground mt-1">Not set</p>
-              )}
-            </div>
-          </div>
-          {project.getTechStack().length > 0 && (
-            <div className="mt-4 pt-4 border-t">
-              <p className="text-sm text-muted-foreground mb-2">Tech Stack</p>
-              <div className="flex flex-wrap gap-2">
-                {project.getTechStack().map((tech) => (
-                  <Badge key={tech} variant="outline">
-                    {tech}
-                  </Badge>
-                ))}
-              </div>
-            </div>
-          )}
-        </CardContent>
-      </Card> */}
-
 
       <div className='border-b'>
         <Link
