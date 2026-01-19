@@ -84,7 +84,13 @@ export function RouteComponent() {
             ))}
           </div>
         </div>
-        <div>
+        <div className='space-y-4'>
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold">Recent Ideas</h2>
+            <Button variant="ghost" size="sm" asChild>
+              <Link to="/ideas">View All</Link>
+            </Button>
+          </div>
           <RecentIdeas />
         </div>
       </div>

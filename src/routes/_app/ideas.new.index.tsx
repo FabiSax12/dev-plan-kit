@@ -12,6 +12,7 @@ export const Route = createFileRoute('/_app/ideas/new/')({
 
 export function RouteComponent() {
   const router = useRouter()
+  const userId = Route.useRouteContext().user?.id!
 
   const form = useAppForm({
     validators: {
@@ -20,9 +21,10 @@ export function RouteComponent() {
     defaultValues: {
       title: '',
       description: '',
+      user_id: userId,
     },
     onSubmit: async ({ value }) => {
-      await createIdea({ data: value })
+      await createIdea({ data: { ...value } })
       router.navigate({ to: "/ideas" })
     }
   });

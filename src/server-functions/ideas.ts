@@ -26,7 +26,7 @@ export const getIdeaById = createServerFn({
     method: "GET"
 }).inputValidator(z.object({
     id: z.string(),
-})).handler(async ({data}): Promise<IdeaData | null> => {
+})).handler(async ({ data }): Promise<IdeaData | null> => {
     const supabase = getSupabaseServerClient();
 
     const response = await supabase
@@ -47,35 +47,40 @@ export const getIdeaById = createServerFn({
 export const createIdea = createServerFn({
     method: 'POST'
 })
-.inputValidator(Idea._schemas.updateIdeaSchema)
-.handler(async ({ data }) => {
-    const supabase = getSupabaseServerClient();
-    await supabase.from('ideas').insert(data)
-});
+    .inputValidator(Idea._schemas.createIdeaSchema)
+    .handler(async ({ data }) => {
+        const supabase = getSupabaseServerClient();
+        const response = await supabase.from('ideas').insert(data);
+
+        if (response.error) {
+            console.error('Error creating idea:', response.error);
+        }
+    });
 
 export const updateIdea = createServerFn({
     method: 'POST'
 })
-.inputValidator(z.object({
-    id: z.string(),
-    idea: Idea._schemas.updateIdeaSchema
-}))
-.handler(async ({ data }) => {
-    const supabase = getSupabaseServerClient();
-    await supabase.from('ideas').update(data.idea).eq('id', data.id);
-});
+    .inputValidator(z.object({
+        id: z.string(),
+        idea: Idea._schemas.updateIdeaSchema
+    }))
+    .handler(async ({ data }) => {
+        const supabase = getSupabaseServerClient();
+        await supabase.from('ideas').update(data.idea).eq('id', data.id);
+    });
 
 export const deleteIdea = createServerFn({
     method: 'POST'
 })
-.inputValidator(z.object({
-    id: z.string(),
-}))
-.handler(async ({ data }) => {
-    const supabase = getSupabaseServerClient();
-    const response = await supabase.from('ideas').delete().eq('id', data.id);
+    .inputValidator(z.object({
+        id: z.string(),
+    }))
+    .handler(async ({ data }) => {
+        console.log("Delete idea " + data.id)
+        const supabase = getSupabaseServerClient();
+        const response = await supabase.from('ideas').delete().eq('id', data.id);
 
-    if (response.error) {
-        console.error('Error deleting idea:', response.error);
-    }
-});
+        if (response.error) {
+            console.error('Error deleting idea:', response.error);
+        }
+    });
