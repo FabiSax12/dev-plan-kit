@@ -9,6 +9,7 @@ export const env = createEnv({
     DATABASE_URL: z.string().min(1),
     DATABASE_PASSWORD: z.string().min(1),
     APP_URL: z.string().url().optional(),
+    AI_API_KEY_DEEPSEEK: z.string().min(1),
   },
 
   /**
@@ -34,6 +35,7 @@ export const env = createEnv({
     SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY,
     DATABASE_URL: process.env.DATABASE_URL,
     DATABASE_PASSWORD: process.env.DATABASE_PASSWORD,
+    AI_API_KEY_DEEPSEEK: process.env.AI_API_KEY_DEEPSEEK,
     
     // Variables del cliente
     VITE_APP_TITLE: import.meta.env.VITE_APP_TITLE,
