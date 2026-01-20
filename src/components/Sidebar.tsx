@@ -49,7 +49,7 @@ export function Sidebar() {
       {/* Sidebar */}
       <aside
         className={cn(
-          "fixed left-0 top-0 z-40 h-screen border-r border-border bg-sidebar transition-all duration-300 md:translate-x-0",
+          "fixed left-0 top-0 z-40 h-screen border-r border-border bg-sidebar transition-all duration-200 md:translate-x-0",
           collapsed ? "w-16" : "w-64",
           mobileOpen ? "translate-x-0" : "-translate-x-full",
         )}
@@ -91,7 +91,7 @@ export function Sidebar() {
                 to={item.href}
                 onClick={() => setMobileOpen(false)}
                 className={cn(
-                  "flex items-center gap-3 rounded-lg py-2 text-sm font-medium transition-colors",
+                  "flex items-center gap-3 rounded-lg py-2 text-sm font-medium transition-colors truncate",
                   collapsed ? "justify-center px-2" : "px-3"
                 )}
                 activeProps={{
