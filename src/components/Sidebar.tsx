@@ -1,4 +1,4 @@
-import { LayoutDashboard, FolderKanban, Lightbulb, Sparkles, Settings, LogOut, Menu, X, User, PanelLeftClose, PanelLeftOpen } from "lucide-react"
+import { LayoutDashboard, FolderKanban, Lightbulb, Sparkles, Settings, LogOut, Menu, X, User, PanelLeftClose, PanelLeftOpen, Map } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -12,6 +12,7 @@ const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/projects", label: "Projects", icon: FolderKanban },
   { href: "/ideas", label: "Ideas", icon: Lightbulb },
+  { href: "/roadmaps", label: "Roadmaps", icon: Map },
   { href: "/ai-assistant", label: "AI Assistant", icon: Sparkles },
 ]
 
