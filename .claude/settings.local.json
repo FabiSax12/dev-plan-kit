@@ -3,5 +3,8 @@
     "allow": [
       "mcp__tanstack__doc"
     ]
-  }
+  },
+  "enabledMcpjsonServers": [
+    "shadcn"
+  ]
 }
