@@ -1,4 +1,4 @@
-import { RequirementsEditor } from '@/components/RequirementsEditor'
+import { RequirementsEditor } from '@/components/requirements-document/RequirementsEditor';
 import { Project } from '@/domain/Project';
 import { getRequirementsDocument, getProjectById } from '@/server-functions/projects';
 import { createFileRoute } from '@tanstack/react-router'
