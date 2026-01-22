@@ -39,7 +39,7 @@ export const createProject = createServerFn({
   method: "POST"
 })
   .inputValidator(Project._schemas.createProjectSchema)
-  .handler(async ({ data }): Promise<void> => {
+  .handler(async ({ data }): Promise<number> => {
 
     const supabase = getSupabaseServerClient();
 
@@ -59,6 +59,8 @@ export const createProject = createServerFn({
       console.error('Error creating project:', createProjectQuery.error);
       throw new Error('Failed to create project');
     }
+
+    return createProjectQuery.data[0].id;
   });
 
 export const deleteProject = createServerFn({

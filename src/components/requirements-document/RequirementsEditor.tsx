@@ -55,7 +55,7 @@ const INITIAL_TEMPLATE = `# Requirements Document
 `
 
 interface RequirementsEditorProps {
-  projectId: string
+  projectId: string | number
   initialContent?: string
   contextName?: string
 }

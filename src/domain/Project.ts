@@ -10,9 +10,9 @@ export class Project {
         createProjectSchema: z.object({
             userId: z.string().uuid(),
             name: z.string().min(1).max(100),
-            description: z.string().min(1).max(2000),
-            status: z.enum(["planning", "in_development", "completed", "on_hold"]),
-            projectType: z.enum(["personal", "work"]),
+            description: z.string().min(1).max(2000).optional(),
+            status: z.enum(["planning", "in_development", "completed", "on_hold"]).default("planning"),
+            projectType: z.enum(["personal", "work"]).default("personal"),
             productionUrl: z.string().url().optional(),
             repositoryUrl: z.string().url().optional(),
             techStack: z.array(z.string().min(1).max(50)).optional(),

@@ -1,4 +1,4 @@
-import { Link, useRouter } from "@tanstack/react-router"
+import { Link, useRouteContext, useRouter } from "@tanstack/react-router"
 import { Lightbulb, Sparkles, FolderKanban, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -7,10 +7,13 @@ import { Idea } from '@/domain/Idea'
 import { useMutation } from "@tanstack/react-query"
 import { toast } from "sonner"
 import { DeleteItemDialog } from "../DeleteItemDialog"
+import { createProject } from "@/server-functions/projects"
+import { Dialog, DialogTrigger, DialogClose, DialogFooter, DialogContent } from "../ui/dialog"
 
 export const IdeaCard = ({ idea }: { idea: Idea }) => {
 
     const router = useRouter();
+    const userId = useRouteContext({ from: "__root__", select: (ctx) => ctx.user?.id! });
 
     const deleteIdeaMutation = useMutation({
         mutationFn: deleteIdea,
@@ -25,6 +28,44 @@ export const IdeaCard = ({ idea }: { idea: Idea }) => {
             })
         },
     })
+
+    const convertToProjectMutation = useMutation({
+
+        mutationFn: async () => {
+            const newProjectId = await createProject({
+                data: {
+                    name: idea.getTitle(),
+                    description: idea.getDescription(),
+                    projectType: 'personal',
+                    status: 'planning',
+                    userId: userId,
+                }
+            });
+
+            await deleteIdeaMutation.mutateAsync({ data: { id: idea.getId().toString() } });
+
+            return newProjectId;
+        },
+
+        onSuccess: (projectId) => {
+            router.navigate({ to: '/projects/$projectId', params: { projectId: projectId.toString() } })
+        },
+
+        onError: (error) => {
+            console.error('Error converting idea to project:', error);
+        },
+    })
+
+    const handleConvertIdeaToProject = async () => {
+        toast.promise(
+            convertToProjectMutation.mutateAsync(),
+            {
+                loading: 'Converting idea to project...',
+                success: 'Idea converted to project',
+                error: 'Error converting idea to project',
+            }
+        )
+    }
 
     return <Card key={idea.getId()} className="group">
         <CardContent className="p-5">
@@ -46,10 +87,29 @@ export const IdeaCard = ({ idea }: { idea: Idea }) => {
                         Chat with AI
                     </Link>
                 </Button>
-                <Button variant="outline" size="sm" className="flex-1 bg-transparent">
-                    <FolderKanban className="mr-1.5 h-3.5 w-3.5" />
-                    Convert to Project
-                </Button>
+
+                <Dialog>
+                    <DialogTrigger asChild>
+                        <Button variant="outline" size="sm" className="flex-1 bg-transparent">
+                            <FolderKanban className="mr-1.5 h-3.5 w-3.5" />
+                            Convert to Project
+                        </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                        <h3 className="text-lg font-medium mb-4">Convert Idea to Project</h3>
+                        <p>Are you sure you want to convert this idea into a project? This action will create a new project based on the idea's details.</p>
+                        <DialogFooter>
+                            <Button
+                                onClick={handleConvertIdeaToProject}
+                            >
+                                Confirm
+                            </Button>
+                            <DialogClose className="ml-2">
+                                Cancel
+                            </DialogClose>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
 
                 <DeleteItemDialog
                     triggerContent={(openModal) =>
