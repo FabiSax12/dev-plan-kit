@@ -10,7 +10,7 @@ export const OAuthButtons = () => {
     const url = await signInWithOAuth({
       data: {
         provider,
-        redirectTo: 'http://localhost:3000/callback',
+        redirectTo: window.location.origin + '/callback',
       }
     });
 
