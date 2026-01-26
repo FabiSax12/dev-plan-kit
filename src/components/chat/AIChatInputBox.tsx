@@ -2,6 +2,7 @@ import { ArrowUp, Library } from "lucide-react"
 import { Button } from "../ui/button"
 import { Textarea } from "../ui/textarea"
 import { Dispatch, SetStateAction, useState } from "react"
+import { cn } from "@/lib/utils";
 
 const PROMPT_MAX_LENGTH = 2000;
 
@@ -12,9 +13,10 @@ interface AIChatInputBoxProps {
     placeholder?: string
     disabled?: boolean
     name?: string
+    className?: string
 }
 
-export const AIChatInputBox = ({ onSubmit, suggestionCards, placeholder, disabled, name }: AIChatInputBoxProps) => {
+export const AIChatInputBox = ({ onSubmit, suggestionCards, placeholder, disabled, name, className }: AIChatInputBoxProps) => {
     const [prompt, setPrompt] = useState("");
 
     const handlePromptChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -27,7 +29,7 @@ export const AIChatInputBox = ({ onSubmit, suggestionCards, placeholder, disable
     }
 
     return (
-        <div className="w-2/3 mx-auto">
+        <div className={cn("w-2/3 mx-auto", className)}>
             {/* Suggestions */}
             <div className="mb-4 grid grid-cols-2 grid-flow-row gap-2">
                 {suggestionCards?.(setPrompt)}

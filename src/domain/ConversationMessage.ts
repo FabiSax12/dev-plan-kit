@@ -6,19 +6,18 @@ export class ConversationMessage {
 
     static readonly _schemas = {
         createMessageSchema: z.object({
-            id: z.string().uuid(),
-            conversationId: z.string().uuid(),
+            conversationId: z.coerce.number(),
             role: z.enum(['user', 'assistant', 'system']),
             content: z.string().min(1),
-            metadata: z.object({}).passthrough(),
-            tokenCount: z.number().min(0),
+            metadata: z.object().loose().optional(),
+            tokenCount: z.number().min(0).default(0),
         }),
 
         updateMessageSchema: z.object({
             conversationId: z.string().uuid().optional(),
             role: z.enum(['user', 'assistant', 'system']).optional(),
             content: z.string().min(1).optional(),
-            metadata: z.object({}).passthrough().optional(),
+            metadata: z.object().loose().optional(),
             tokenCount: z.number().min(0).optional(),
         }),
 
@@ -27,9 +26,9 @@ export class ConversationMessage {
             conversationId: z.string().uuid(),
             role: z.enum(['user', 'assistant', 'system']),
             content: z.string().min(1),
-            metadata: z.object({}).passthrough(),
+            metadata: z.object().loose().optional(),
             tokenCount: z.number().min(0),
-            createdAt: z.string().datetime(),
+            createdAt: z.iso.datetime(),
         }),
     };
 

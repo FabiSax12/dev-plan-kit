@@ -4,6 +4,7 @@ import { Link } from "@tanstack/react-router"
 import {
   ArrowLeft,
   Pencil,
+  Sparkles,
   Trash2,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -165,6 +166,16 @@ function RouteComponent() {
           }}
         >
           Epics & Stories
+        </Link>
+        <Link
+          to="/ai-assistant/project/$projectId"
+          params={{ projectId: id }}
+          className='px-4 py-2 inline-block transition-colors'
+        >
+          <span className='flex gap-2 items-center'>
+            <Sparkles className='w-4 h-4' />
+            AI Assistant
+          </span>
         </Link>
       </div>
 

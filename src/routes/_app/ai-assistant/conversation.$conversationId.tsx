@@ -1,38 +1,101 @@
+import { createConversationMessage, getConversationById, getConversationMessages } from '@/server-functions/chat'
+import { useChat } from '@ai-sdk/react';
 import { createFileRoute } from '@tanstack/react-router'
-import { useChat } from '@ai-sdk/react'
+import { DefaultChatTransport } from 'ai';
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Bot, User } from 'lucide-react'
-import z from 'zod'
-import { DefaultChatTransport } from 'ai'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { AIChatInputBox, AIChatSuggestionBadge } from '@/components/chat/AIChatInputBox'
+import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbSeparator } from '@/components/ui/breadcrumb';
+import { createProjectByIdQueryOptions } from '@/query-options/projects';
+import { createIdeaByIdQueryOptions } from '@/query-options/idea';
+import { ProjectData } from '@/domain/Project';
+import { IdeaData } from '@/domain/Idea';
+import { useEffect, useState } from 'react';
 
-export const Route = createFileRoute('/_app/ai-assistant')({
+export const Route = createFileRoute(
+  '/_app/ai-assistant/conversation/$conversationId',
+)({
   component: RouteComponent,
-  validateSearch: z.object({
-    idea: z.string().optional(),
-    project: z.string().optional(),
-  }),
+  loader: async ({ params, context }) => {
+    const conversationData = await getConversationById({ data: { conversationId: Number(params.conversationId) } })
+
+    const ownerEntity = conversationData.project_id
+      ? 'project'
+      : conversationData.idea_id
+        ? 'idea'
+        : null;
+
+    let ownerData = null;
+
+    if (ownerEntity === 'project') {
+      ownerData = await context.queryClient.ensureQueryData(createProjectByIdQueryOptions(conversationData.project_id!));
+    } else if (ownerEntity === 'idea') {
+      ownerData = await context.queryClient.ensureQueryData(createIdeaByIdQueryOptions(conversationData.idea_id!));
+    }
+
+    return {
+      conversationData: conversationData,
+      messagesData: await getConversationMessages({ data: { conversationId: Number(params.conversationId) } }),
+      ownerData: {
+        entity: ownerEntity,
+        data: ownerData
+      } as { entity: null; data: null } | { entity: 'project'; data: ProjectData } | { entity: 'idea'; data: IdeaData },
+    }
+  }
 })
 
 function RouteComponent() {
-  // const { idea, project } = Route.useSearch()
+  const { messagesData, conversationData, ownerData } = Route.useLoaderData();
 
-  // const initialMessage = idea
-  //   ? `I have an idea I'd like to discuss: "${idea}". Can you help me refine it and suggest next steps?`
-  //   : project
-  //     ? `I'm working on a project called "${project}". Can you help me plan the development tasks?`
-  //     : undefined
+  const [isLastMessagePendingToSave, setIsLastMessagePendingToSave] = useState(false);
 
-  const { messages, sendMessage, status, } = useChat({
+  const { messages, sendMessage, status } = useChat({
     transport: new DefaultChatTransport({
       api: '/api/chat',
     }),
-    // initialMessages: initialMessage
-    //   ? [{ id: '1', role: 'user', content: initialMessage }]
-    //   : [],
+    messages: messagesData.map((msg) => ({
+      id: msg.id.toString(),
+      role: msg.role,
+      parts: [{ type: 'text', text: msg.content }],
+    })),
   });
+
+  useEffect(() => {
+    if (messages.length === 1) {
+      sendMessage({ text: messages[0].parts.map(part => part.text).join(' ') });
+      setIsLastMessagePendingToSave(true);
+    }
+  }, [])
+
+  // Save the recived message from AI to database
+  useEffect(() => {
+
+    console.log(status)
+
+    const latestMessage = messages[messages.length - 1];
+
+    if (latestMessage && status === 'ready' && isLastMessagePendingToSave) {
+      createConversationMessage({
+        data: {
+          conversationId: Number(conversationData.id),
+          role: latestMessage.role,
+          content: latestMessage.parts.map(part => part.text).join(' '),
+          metadata: {
+            originalId: latestMessage.id,
+          }
+        }
+      }).then(() => {
+        console.log("Message saved to DB")
+      }).catch((error) => {
+        console.error("Error saving message to DB", error);
+      }).finally(() => {
+        setIsLastMessagePendingToSave(false);
+      });
+    }
+
+  }, [messages, status]);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -42,21 +105,29 @@ function RouteComponent() {
 
     if (message) {
       sendMessage({ text: message });
+      setIsLastMessagePendingToSave(true);
       form.reset();
     }
   }
 
   return (
     <div className="flex h-[calc(100vh-4rem)] flex-col gap-4">
+      <Breadcrumb>
+        <BreadcrumbList>
+          {ownerData.entity && (
+            <BreadcrumbItem>
+              {ownerData.entity === 'project' ? ownerData.data.name : ownerData.entity === 'idea' ? ownerData.data.title : null}
+            </BreadcrumbItem>
+          )}
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            {conversationData.title || 'Untitled Conversation'}
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
       <div className="flex flex-1 flex-col overflow-hidden">
-        {/* <CardHeader className="border-b">
-          <CardTitle className="flex items-center gap-2">
-            <Bot className="size-5" />
-            AI Assistant
-          </CardTitle>
-        </CardHeader> */}
         <div className="flex flex-1 flex-col gap-4 overflow-hidden p-0">
-          <ScrollArea className="flex-1 p-4 overflow-y-scroll">
+          <ScrollArea className="flex-1 p-4 w-2/3 mx-auto">
             <div className="flex flex-col gap-4">
               {messages.length === 0 && (
                 <div className="text-muted-foreground flex flex-col items-center justify-center py-12 text-center">
@@ -70,7 +141,7 @@ function RouteComponent() {
               {messages.map((message) => (
                 <div
                   key={message.id}
-                  className={`flex gap-3 ${message.role === 'user' ? 'flex-row-reverse' : ''}`}
+                  className={`flex gap-3 ${message.role === `user` ? `flex-row-reverse` : ``}`}
                 >
                   <div
                     className={`flex size-8 shrink-0 items-center justify-center rounded-full ${message.role === 'user'
@@ -180,7 +251,7 @@ function RouteComponent() {
               name="message"
               minLength={1}
             />
-            <Button type="submit" disabled={status === 'submitted' || status === 'streaming'}>
+            <Button type="submit" disabled={status === "submitted" || status === "streaming"}>
               <Send className="size-4" />
             </Button>
           </form> */}

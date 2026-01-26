@@ -1,29 +1,34 @@
 import z from "zod";
+import { ConversationMessage } from "./ConversationMessage";
 
 export type AIConversationData = z.infer<typeof AIConversation._schemas.plainConversationSchema>;
 
 export class AIConversation {
     static readonly _schemas = {
         createConversationSchema: z.object({
-            id: z.string().uuid(),
             title: z.string().min(1).max(255),
-            userId: z.string().uuid(),
-            metadata: z.object({}).passthrough(),
+            userId: z.uuid(),
+            metadata: z.object().optional(),
+            project_id: z.number().optional(),
+            idea_id: z.number().optional(),
+            initial_messages: ConversationMessage._schemas.createMessageSchema.array().optional()
         }),
 
         updateConversationSchema: z.object({
             title: z.string().min(1).max(255).optional(),
-            userId: z.string().uuid(),
-            metadata: z.object({}).passthrough(),
+            userId: z.uuid().optional(),
+            metadata: z.object().optional(),
         }),
 
         plainConversationSchema: z.object({
-            id: z.string().uuid(),
+            id: z.uuid(),
             title: z.string().min(1).max(255),
-            userId: z.string().uuid(),
-            metadata: z.object({}).passthrough(),
-            createdAt: z.string().datetime(),
-            updatedAt: z.string().datetime(),
+            userId: z.uuid(),
+            metadata: z.object(),
+            createdAt: z.iso.datetime(),
+            updatedAt: z.iso.datetime(),
+            project_id: z.number().optional(),
+            idea_id: z.number().optional(),
         }),
     };
 
@@ -34,6 +39,8 @@ export class AIConversation {
         private metadata: Record<string, any> = {},
         private createdAt: Date,
         private updatedAt: Date,
+        private projectId?: number,
+        private ideaId?: number,
     ) { }
 
     getId() {
@@ -60,6 +67,14 @@ export class AIConversation {
         return this.updatedAt;
     }
 
+    getProjectId() {
+        return this.projectId;
+    }
+
+    getIdeaId() {
+        return this.ideaId;
+    }
+
     static fromJSONData(data: AIConversationData): AIConversation {
         return new AIConversation(
             data.id,
@@ -68,6 +83,8 @@ export class AIConversation {
             data.metadata,
             new Date(data.createdAt),
             new Date(data.updatedAt),
+            data.project_id,
+            data.idea_id,
         );
     }
 }
